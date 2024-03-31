@@ -1,0 +1,319 @@
+# Read the Excel file into a pandas DataFrame, with the shape of the dataset
+import pandas as pd
+file_path = '/content/mldataset.xlsx'
+df = pd.read_excel(file_path)
+print("Shape of the dataset:", df.shape)
+print(df)
+
+# Display the first few rows of the dataset
+print(df.head())
+
+# Display the summary statistics of the dataset
+print(df.describe())
+
+# Check the data types of each column
+print(df.dtypes)
+
+# Check for any missing values
+print(df.isnull().sum())
+
+# Visualize the correlation between the columns
+plt.figure(figsize=(12,10))
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm')
+plt.tight_layout()
+plt.show()
+
+# Create age ranges of 5-year gaps
+age_bins = range(0, max(df['AGE'])+1, 5)
+age_labels = [f"{start}-{start+4}" for start in age_bins[:-1]]
+# Group data by age ranges and count the number of people with lung cancer in each range
+lung_cancer_data = df[df['LUNG_CANCER'] == 1]
+lung_cancer_count_by_age = pd.cut(lung_cancer_data['AGE'], bins=age_bins, labels=age_labels).value_counts().sort_index()
+# Create a bar chart
+plt.figure(figsize=(10, 6))
+lung_cancer_count_by_age.plot(kind='bar', color='skyblue')
+plt.title('Number of People with Lung Cancer by Age Range')
+plt.xlabel('Age Range')
+plt.ylabel('Count of People with Lung Cancer')
+plt.xticks(rotation=45, ha='right')
+plt.tight_layout()
+plt.show()
+
+# Selecting the feature (independent variable) and target variable (dependent variable)
+X = df[['SMOKING']]  # Feature: Smoking column
+y = df['LUNG_CANCER']  # Target variable: Lung cancer
+# Split the dataset into training and testing sets (50% training, 50% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+# Initialize the Random Forest classifier
+random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
+# Train the classifier on the training data
+random_forest.fit(X_train, y_train)
+# Make predictions on the testing data
+y_pred = random_forest.predict(X_test)
+# Evaluate the accuracy of the classifier
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+# Plot the first decision tree in the Random Forest
+plt.figure(figsize=(20,10))
+plot_tree(random_forest.estimators_[0], feature_names=X.columns, class_names=['0', '1'], filled=True)
+plt.show()
+
+# Split the dataset into features (X) and target variable (y)
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]  # Features
+y = df['LUNG_CANCER']  # Target variable
+# Split the second half of the dataset into training and testing sets (50% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
+# Initialize the Random Forest classifier
+random_forest = RandomForestClassifier(n_estimators=100, random_state=42)
+# Train the classifier on the training data (first half)
+random_forest.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the second half of the dataset
+lung_cancer_predictions = random_forest.predict(X_test)
+# Evaluate the accuracy of the predictions
+accuracy = accuracy_score(y_test, lung_cancer_predictions)
+print("Accuracy:", accuracy)
+# Display the predictions
+print("Lung Cancer Predictions:")
+for prediction in lung_cancer_predictions:
+    if prediction == 0:
+        print("No Lung Cancer")
+    elif prediction == 1:
+        print("Lung Cancer")
+
+# Generate confusion matrix
+cm = confusion_matrix(y_test, lung_cancer_predictions)
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, cmap='Blues', fmt='d', cbar=False)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Selecting the independent variables (features) and dependent variable (target)
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]  # Features
+y = df['LUNG_CANCER']  # Target variable
+# Split the dataset into training and testing sets (50% training, 50% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, shuffle=False)
+# Initialize the Naive Bayes classifier
+naive_bayes = GaussianNB()
+# Train the classifier on the training data
+naive_bayes.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the training data
+lung_cancer_predictions = naive_bayes.predict(X_train)
+# Display the predictions
+print("Lung Cancer Predictions:")
+for prediction in lung_cancer_predictions:
+    if prediction == 0:
+        print("No Lung Cancer")
+    elif prediction == 1:
+        print("Lung Cancer")
+
+# Generate confusion matrix
+cm = confusion_matrix(y_train, lung_cancer_predictions)
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, cmap='Blues', fmt='d', cbar=False)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix for Naive Bayes Classifier')
+plt.show()
+
+# Selecting the independent variables (features) and dependent variable (target)
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]
+y = df['LUNG_CANCER']
+# Split the second part of the dataset into training and testing sets (40% training, 60% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, shuffle=False)
+# Initialize the Naive Bayes classifier
+naive_bayes = GaussianNB()
+# Train the classifier on the training data
+naive_bayes.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the testing data
+lung_cancer_predictions = naive_bayes.predict(X_test)
+# Evaluate the accuracy of the predictions
+accuracy = accuracy_score(y_test, lung_cancer_predictions)
+print("Accuracy:", accuracy)
+# Display the predictions
+print("Lung Cancer Predictions:")
+for prediction in lung_cancer_predictions:
+    if prediction == 0:
+        print("No Lung Cancer")
+    elif prediction == 1:
+        print("Lung Cancer")
+
+# Selecting the independent variables (features) and dependent variable (target)
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]
+y = df['LUNG_CANCER']
+# Split the second part of the dataset into training and testing sets (40% training, 60% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, shuffle=False)
+# Initialize the Naive Bayes classifier
+naive_bayes = GaussianNB()
+# Train the classifier on the training data
+naive_bayes.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the testing data
+lung_cancer_predictions = naive_bayes.predict(X_test)
+# Generate confusion matrix
+cm = confusion_matrix(y_test, lung_cancer_predictions)
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, cmap='Blues', fmt='d', cbar=False)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Selecting the independent variables (features) and dependent variable (target)
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]
+y = df['LUNG_CANCER']
+# Split the second part of the dataset into training and testing sets (40% training, 60% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, shuffle=False)
+# Initialize the Naive Bayes classifier
+naive_bayes = GaussianNB()
+# Train the classifier on the training data
+naive_bayes.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the testing data
+lung_cancer_predictions = naive_bayes.predict(X_test)
+# Generate confusion matrix
+cm = confusion_matrix(y_test, lung_cancer_predictions)
+# Extract true positives, false positives, true negatives, and false negatives from confusion matrix
+tn, fp, fn, tp = cm.ravel()
+# Plot bar graph
+plt.figure(figsize=(8, 6))
+bars = plt.bar(['True Negative', 'False Positive', 'False Negative', 'True Positive'], [tn, fp, fn, tp], color=['blue', 'red', 'red', 'blue'])
+plt.xlabel('Predicted vs Actual')
+plt.ylabel('Count')
+plt.title('Counts of True Positive, False Positive, True Negative, and False Negative')
+plt.show()
+
+# Selecting the independent variables (features) and dependent variable (target)
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]
+y = df['LUNG_CANCER']
+# Split the first part of the dataset into training and testing sets (40% training, 60% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, shuffle=False)
+# Initialize the KNN classifier with k=3 (you can adjust k as needed)
+knn = KNeighborsClassifier(n_neighbors=3)
+# Train the classifier on the training data
+knn.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the testing data
+lung_cancer_predictions = knn.predict(X_test)
+# Evaluate the accuracy of the predictions
+accuracy = accuracy_score(y_test, lung_cancer_predictions)
+print("Accuracy:", accuracy)
+# Display the predictions
+print("Lung Cancer Predictions:")
+for prediction in lung_cancer_predictions:
+    if prediction == 0:
+        print("No Lung Cancer")
+    elif prediction == 1:
+        print("Lung Cancer")
+
+# Selecting the independent variables (features) and dependent variable (target)
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]
+y = df['LUNG_CANCER']
+# Split the first part of the dataset into training and testing sets (40% training, 60% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, shuffle=False)
+# Initialize the KNN classifier with k=3 (you can adjust k as needed)
+knn = KNeighborsClassifier(n_neighbors=3)
+# Train the classifier on the training data
+knn.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the testing data
+lung_cancer_predictions = knn.predict(X_test)
+# Generate confusion matrix
+cm = confusion_matrix(y_test, lung_cancer_predictions)
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, cmap='Blues', fmt='d', cbar=False)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Calculate precision, recall, and F1-score
+precision, recall, fscore, _ = precision_recall_fscore_support(y_test, lung_cancer_predictions, average='binary')
+# Plot precision, recall, and F1-score
+labels = ['Precision', 'Recall', 'F1-score']
+values = [precision, recall, fscore]
+plt.figure(figsize=(8, 6))
+plt.bar(labels, values, color=['blue', 'green', 'orange'])
+plt.xlabel('Metrics')
+plt.ylabel('Value')
+plt.title('Precision, Recall, and F1-score')
+plt.ylim(0, 1.1)
+plt.show()
+
+# Split the first part of the dataset into training and testing sets (40% training, 60% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, shuffle=False)
+# Initialize the KNN classifier with k=3 (you can adjust k as needed)
+knn = KNeighborsClassifier(n_neighbors=3)
+# Train the classifier on the training data
+knn.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the testing data
+lung_cancer_predictions = knn.predict(X_test)
+# Evaluate the accuracy of the predictions
+accuracy = accuracy_score(y_test, lung_cancer_predictions)
+print("Accuracy:", accuracy)
+# Display the predictions
+print("Lung Cancer Predictions:")
+for prediction in lung_cancer_predictions:
+    if prediction == 0:
+        print("No Lung Cancer")
+    elif prediction == 1:
+        print("Lung Cancer")
+
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]
+y = df['LUNG_CANCER']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.6, shuffle=False)
+knn = KNeighborsClassifier(n_neighbors=3)
+knn.fit(X_train, y_train)
+lung_cancer_predictions = knn.predict(X_test)
+cm = confusion_matrix(y_test, lung_cancer_predictions)
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, cmap='Blues', fmt='d', cbar=False)
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.title('Confusion Matrix')
+plt.show()
+
+from sklearn.metrics import precision_score
+import matplotlib.pyplot as plt
+# Calculate precision
+precision = precision_score(y_test, lung_cancer_predictions)
+# Plot precision
+plt.figure(figsize=(6, 4))
+plt.bar(['Precision'], [precision], color='blue')
+plt.xlabel('Metrics')
+plt.ylabel('Value')
+plt.title('Precision')
+plt.ylim(0, 1.1)
+plt.show()
+
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]
+y = df['LUNG_CANCER']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+svm_classifier = SVC(kernel='linear')
+svm_classifier.fit(X_train, y_train)
+lung_cancer_predictions = svm_classifier.predict(X_test)
+accuracy = accuracy_score(y_test, lung_cancer_predictions)
+print("Accuracy:", accuracy)
+print("Lung Cancer Predictions:")
+for prediction in lung_cancer_predictions:
+    if prediction == 0:
+        print("No Lung Cancer")
+    elif prediction == 1:
+        print("Lung Cancer")
+
+X = df[['WHEEZING', 'ALCOHOL CONSUMING', 'COUGHING', 'SMOKING', 'CHEST PAIN']]
+y = df['LUNG_CANCER']
+# Split the dataset into training and testing sets (80% training, 20% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Initialize the SVM classifier
+svm_classifier = SVC(kernel='linear')
+# Train the classifier on the training data
+svm_classifier.fit(X_train, y_train)
+# Predict if the patient has lung cancer or not using the testing data
+lung_cancer_predictions = svm_classifier.predict(X_test)
+# Calculate the accuracy of the predictions
+accuracy = accuracy_score(y_test, lung_cancer_predictions)
+print("SVM Model Accuracy:", accuracy)
